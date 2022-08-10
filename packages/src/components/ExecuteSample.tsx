@@ -1,4 +1,4 @@
-import { Fee, MsgSend } from '@terra-money/terra.js';
+import { Fee, MsgExecuteContract, MsgSend } from '@terra-money/terra.js';
 import {
   CreateTxFailed,
   Timeout,
@@ -12,10 +12,9 @@ import React, { useCallback, useState } from 'react';
 
 const TEST_TO_ADDRESS = 'terra12hnhh5vtyg5juqnzm43970nh4fw42pt27nw9g9';
 
-export function TxSample() {
+export function ExecuteSample() {
   const [txResult, setTxResult] = useState<TxResult | null>(null);
   const [txError, setTxError] = useState<string | null>(null);
-  const [to, setTo] = useState<string>(TEST_TO_ADDRESS);
 
   const connectedWallet = useConnectedWallet();
 
@@ -34,11 +33,15 @@ export function TxSample() {
 
     connectedWallet
       .post({
-        fee: new Fee(1000000, '10000uluna'),
+        fee: new Fee(1000000, '200000uusd'),
         msgs: [
-          new MsgSend(connectedWallet.walletAddress, to, {
-            uluna: 1000,
-          }),
+          new MsgExecuteContract(
+            connectedWallet.walletAddress,
+            TEST_TO_ADDRESS,
+            {
+              swap: {},
+            },
+          ),
         ],
       })
       .then((nextTxResult: TxResult) => {
@@ -63,17 +66,14 @@ export function TxSample() {
           );
         }
       });
-  }, [connectedWallet, to]);
+  }, [connectedWallet]);
 
   return (
     <div>
-      <h1>Tx Sample</h1>
+      <h1>Contract Execute Sample</h1>
 
       {connectedWallet?.availablePost && !txResult && !txError && (
-        <>
-          <input value={to} onChange={(e) => setTo(e.target.value)} />
-          <button onClick={proceed}>Send 1000uluna to {to}</button>
-        </>
+        <button onClick={proceed}>Send Swap Msg to {TEST_TO_ADDRESS}</button>
       )}
 
       {txResult && (
